@@ -6,27 +6,36 @@ import time
 import datetime
 import argparse
 
+from constants import locations
+
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
-def get_html():
+def get_html(location):
 	driver = webdriver.Chrome()
 	#TODO: add options for locations, using a dictionary
-	driver.get('https://five-daughters-bakery.square.site/s/order?location=11ea670d96d28035a53a0cc47a2b63cc')
+	try:
+		driver.get(locations[location])
+	except KeyError:
+		print(f"\n\nlocation \"{location}\" is not a valid option. \n\nValid \
+inputs for -l --location: \nfranklin\neast_nashville\nwest_nashville\n\
+hillsboro\nponce_city_market\nwestside_provisions")
+	except Exception as e:
+		print(e)
+	else:
+		#To ensure that the page is loaded
+		time.sleep(5)
 
-	#To ensure that the page is loaded
-	time.sleep(5)
+		#This renders the JS code and stores all the info in static HTML.
+		html = driver.page_source
+		soup = BeautifulSoup(html, "html.parser")
 
-	#This renders the JS code and stores all the info in static HTML.
-	html = driver.page_source
-	soup = BeautifulSoup(html, "html.parser")
-
-	products = soup.find_all('div', {'class': 'meta'})
-	# Can remove products maybe...
-	names = [product.find('p', {'class': 'w-product-title'}) for product in products]
-	availabilities = [product.find('div', {'class': 'stock-tag'}) for product in products]
-	prices = [product.find('span', {'class': 'font--product-price'}) for product in products]
-	return names, availabilities, prices
+		products = soup.find_all('div', {'class': 'meta'})
+		# Can remove products maybe...
+		names = [product.find('p', {'class': 'w-product-title'}) for product in products]
+		availabilities = [product.find('div', {'class': 'stock-tag'}) for product in products]
+		prices = [product.find('span', {'class': 'font--product-price'}) for product in products]
+		return names, availabilities, prices
 
 def get_output(names, availabilities, prices, diet):
 	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
@@ -52,24 +61,31 @@ def Main():
 		donuts.", action="store_true")
 	parser.add_argument("-f", "--file", help="Filename to write output to.",
 	type=str)
+	parser.add_argument("-l", "--location", help="The store location to get \
+		inventory from. \nValid Choices:\n\nfranklin\neast_nashville\n\
+		west_nashville\nhillsboro\nponce_city_market\nwestside_provisions", 
+		type=str, required=True)
 
 	args = parser.parse_args()
-	names, availabilities, prices = get_html()
-	if args.omni:
-		print("Showing all food and drinks: ")
-		output = get_output(names, availabilities, prices, '')
-	elif args.paleo:
-		print("Showing paleo donuts only: ")
-		output = get_output(names, availabilities, prices, 'Paleo')
-	elif args.vegan:
-		print("Showing vegan donuts only: ")
-		output = get_output(names, availabilities, prices, 'Vegan')
-	
-	print(output)
+	try:
+		names, availabilities, prices = get_html(args.location)
+		if args.omni:
+			print("Showing all food and drinks: ")
+			output = get_output(names, availabilities, prices, '')
+		elif args.paleo:
+			print("Showing paleo donuts only: ")
+			output = get_output(names, availabilities, prices, 'Paleo')
+		elif args.vegan:
+			print("Showing vegan donuts only: ")
+			output = get_output(names, availabilities, prices, 'Vegan')
+		
+		print(output)
 
-	if args.file:
-		with open(args.file, "a") as f:
-			f.write(output)
+		if args.file:
+			with open(args.file, "a") as f:
+				f.write(output)
+	except Exception as e:
+		print('\nFailed to get data from URL')
 
 if __name__ == "__main__":
 	Main()

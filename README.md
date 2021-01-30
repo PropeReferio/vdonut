@@ -8,14 +8,19 @@ the version of your Chrome browser, and put that executable in a directory that'
 To see $PATH, type `echo $PATH` in a terminal.
 
 ## Usage:
-usage: vdonut [-h] [-o] [-f FILE]
+usage: vdonut [-h] (-o | -p | -v) [-f FILE] -l LOCATION
 
 optional arguments:
   -h, --help            show this help message and exit
-  -o, --omni            Shows availability of all donuts, not just vegan ones.
+  -o, --omni            Shows availability of all donuts.
+  -p, --paleo           Shows availability of paleo donuts.
+  -v, --vegan           Shows availability of vegan donuts.
   -f FILE, --file FILE  Filename to write output to.
+  -l LOCATION, --location LOCATION
+                        The store location to get inventory from. Valid
+                        Choices: franklin east_nashville west_nashville
+                        hillsboro ponce_city_market westside_provisions
 
 ## Coming Soon:
-Option to choose Five Daughters Bakery locations
 Configure your default options, such as diet and location
 Lose dependency on selenium and Chrome.
