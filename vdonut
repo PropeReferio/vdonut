@@ -28,17 +28,15 @@ def get_html():
 	return names, availabilities, prices
 
 def get_output(names, availabilities, prices, diet):
-	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n'
-	# TODO: Format output, so it's aligned. Longest product name is 36 chars...
-	# Yeast Raised - Boston Cream (Filled)
+	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
 	for i in range(len(names)):
 		if all([diet in names[i].text, not 'Tee' in names[i].text, 
 		not 'Hoodie' in names[i].text, not 'Onesie' in names[i].text,
 		not 'Hat' in names[i].text]):
 			if availabilities[i]:
-				output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip() + '\n'
+				output += f"{prices[i].text.strip() : <6} |  {names[i].text.strip() : <48}  |  {availabilities[i].text.strip()} \n"
 			else:
-				output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '\n'
+				output += f"{prices[i].text.strip() : <6} |  {names[i].text.strip() : <48} \n"
 
 	return output
 
@@ -57,7 +55,7 @@ def Main():
 	args = parser.parse_args()
 	names, availabilities, prices = get_html()
 	if args.omni:
-		print("Showing all donuts: ")
+		print("Showing all food and drinks: ")
 		output = get_output(names, availabilities, prices, '')
 	elif args.paleo:
 		print("Showing paleo donuts only: ")
