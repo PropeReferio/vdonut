@@ -27,46 +27,40 @@ def get_html():
 	prices = [product.find('span', {'class': 'font--product-price'}) for product in products]
 	return names, availabilities, prices
 
-# def show_products():
-# 	for i in range(len(products)):
-# 		if 'Vegan' in names[i].text:
-# 			if availabilities[i]:
-# 				print(prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip())
-# 			else:
-# 				print(prices[i].text.strip() + '  |  ' + names[i].text.strip())
-
-def get_output(names, availabilities, prices, omni=False):
+def get_output(names, availabilities, prices, diet):
 	output = str(datetime.datetime.now()) + '\n'
-	if not omni:
-		for i in range(len(names)):
-			if 'Vegan' in names[i].text:
-				if availabilities[i]:
-					output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip() + '\n'
-				else:
-					output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '\n'
-	else:
-		for i in range(len(names)):
+	for i in range(len(names)):
+		if diet in names[i].text:
 			if availabilities[i]:
 				output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip() + '\n'
 			else:
 				output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '\n'
+
 	return output
 
 def Main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-o", "--omni", help="Shows availability of all \
-		donuts, not just vegan ones.", action="store_true")
+	diet_group = parser.add_mutually_exclusive_group(required=True)
+	diet_group.add_argument("-o", "--omni", help="Shows availability of all \
+		donuts.", action="store_true")
+	diet_group.add_argument("-p", "--paleo", help="Shows availability of paleo \
+		donuts.", action="store_true")
+	diet_group.add_argument("-v", "--vegan", help="Shows availability of vegan \
+		donuts.", action="store_true")
 	parser.add_argument("-f", "--file", help="Filename to write output to.",
 	type=str)
 
 	args = parser.parse_args()
 	names, availabilities, prices = get_html()
 	if args.omni:
-		print("Showing omni donuts: ")
-		output = get_output(names, availabilities, prices, args.omni)
-	else:
+		print("Showing all donuts: ")
+		output = get_output(names, availabilities, prices, '')
+	elif args.paleo:
+		print("Showing paleo donuts only: ")
+		output = get_output(names, availabilities, prices, 'Paleo')
+	elif args.vegan:
 		print("Showing vegan donuts only: ")
-		output = get_output(names, availabilities, prices)
+		output = get_output(names, availabilities, prices, 'Vegan')
 	
 	print(output)
 
