@@ -28,7 +28,9 @@ def get_html():
 	return names, availabilities, prices
 
 def get_output(names, availabilities, prices, diet):
-	output = str(datetime.datetime.now()) + '\n'
+	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n'
+	# TODO: Format output, so it's aligned. Longest product name is 36 chars...
+	# Yeast Raised - Boston Cream (Filled)
 	for i in range(len(names)):
 		if all([diet in names[i].text, not 'Tee' in names[i].text, 
 		not 'Hoodie' in names[i].text, not 'Onesie' in names[i].text,
