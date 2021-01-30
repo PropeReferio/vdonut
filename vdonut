@@ -30,7 +30,9 @@ def get_html():
 def get_output(names, availabilities, prices, diet):
 	output = str(datetime.datetime.now()) + '\n'
 	for i in range(len(names)):
-		if diet in names[i].text:
+		if all([diet in names[i].text, not 'Tee' in names[i].text, 
+		not 'Hoodie' in names[i].text, not 'Onesie' in names[i].text,
+		not 'Hat' in names[i].text]):
 			if availabilities[i]:
 				output += prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip() + '\n'
 			else:
