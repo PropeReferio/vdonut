@@ -15,7 +15,6 @@ time.sleep(5)
 html = driver.page_source
 soup = BeautifulSoup(html, "html.parser")
 
-# titles = soup.find_all('div', {'class': 'title'})
 products = soup.find_all('div', {'class': 'meta'})
 # Can remove products maybe...
 names = [product.find('p', {'class': 'w-product-title'}) for product in products]
@@ -24,22 +23,7 @@ prices = [product.find('span', {'class': 'font--product-price'}) for product in 
 
 for i in range(len(products)):
     if 'Vegan' in names[i].text:
-        # if availabilities[i].text:
-        if availabilities[i]: #
+        if availabilities[i]:
             print(prices[i].text.strip() + '  |  ' + names[i].text.strip() + '  |  ' + availabilities[i].text.strip())
         else:
             print(prices[i].text.strip() + '  |  ' + names[i].text.strip())
-# print('Products: ', len(products), '\nNames: ', len(names), '\nAvailabilities: ', len(availabilities), '\nPrices: ', len(prices))
-
-# for product in products:
-#     for child in product.descendants:
-#         if child.string and 'Vegan' in child.string:
-#             print(child.string)
-
-# print(titles)
-# print(len(list(titles[0].descendants)))
-# for child in titles[0].descendants:
-#     print('\nNext child: \n\n', child)
-
-#If within a title, it's descendants p contains "vegan," print that, and it's
-#availability
