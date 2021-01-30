@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 
 def get_html():
 	driver = webdriver.Chrome()
+	#TODO: add options for locations, using a dictionary
 	driver.get('https://five-daughters-bakery.square.site/s/order?location=11ea670d96d28035a53a0cc47a2b63cc')
 
 	#To ensure that the page is loaded

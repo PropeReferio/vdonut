@@ -16,8 +16,6 @@ optional arguments:
   -f FILE, --file FILE  Filename to write output to.
 
 ## Coming Soon:
-Option to show only paleo donuts
-Show only food items
 Option to choose Five Daughters Bakery locations
 Configure your default options, such as diet and location
 Lose dependency on selenium and Chrome.
