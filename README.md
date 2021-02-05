@@ -1,12 +1,7 @@
 # A little CLI to keep me informed of the availability of vegan donuts near me.
 
 ### Dependencies:
-Selenium
-Chrome
-You'll need to download the `chromedriver` executable, with a version that matches
-the version of your Chrome browser, and put that executable in a directory that's on `$PATH`.
-To see $PATH, type `echo $PATH` in a terminal.
-
+requests - run `pip install requests`
 ## Usage:
 usage: vdonut [-h] (-o | -p | -v) [-f FILE] -l LOCATION
 
@@ -22,5 +17,4 @@ optional arguments:
                         hillsboro ponce_city_market westside_provisions
 
 ## Coming Soon:
-Configure your default options, such as diet and location
-Lose dependency on selenium and Chrome.
+Configure your default options, such as diet and location.
