@@ -54,7 +54,7 @@ def Main():
 	parser = argparse.ArgumentParser()
 	diet_group = parser.add_mutually_exclusive_group(required=True)
 	diet_group.add_argument("-o", "--omni", help="Shows availability of all \
-		donuts.", action="store_true")
+		food and drinks.", action="store_true")
 	diet_group.add_argument("-p", "--paleo", help="Shows availability of paleo \
 		donuts.", action="store_true")
 	diet_group.add_argument("-v", "--vegan", help="Shows availability of vegan \
