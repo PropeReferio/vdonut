@@ -1,21 +1,16 @@
 #!/usr/bin/env python
-
-#Hopefully this URL doesn't change
-#https://five-daughters-bakery.square.site/s/order?location=11ea670d96d28035a53a0cc47a2b63cc
 import time
 import datetime
 import argparse
 
 from constants import locations
 
-from selenium import webdriver
-from bs4 import BeautifulSoup
+import requests
 
 def get_html(location):
-	driver = webdriver.Chrome()
 	#TODO: add options for locations, using a dictionary
 	try:
-		driver.get(locations[location])
+		r = requests.get(locations[location])
 	except KeyError:
 		print(f"\n\nlocation \"{location}\" is not a valid option. \n\nValid \
 inputs for -l --location: \nfranklin\neast_nashville\nwest_nashville\n\
@@ -24,29 +19,33 @@ hillsboro\nponce_city_market\nwestside_provisions")
 		print(e)
 	else:
 		#To ensure that the page is loaded
-		time.sleep(5)
-
-		#This renders the JS code and stores all the info in static HTML.
-		html = driver.page_source
-		soup = BeautifulSoup(html, "html.parser")
-
-		products = soup.find_all('div', {'class': 'meta'})
-		# Can remove products maybe...
-		names = [product.find('p', {'class': 'w-product-title'}) for product in products]
-		availabilities = [product.find('div', {'class': 'stock-tag'}) for product in products]
-		prices = [product.find('span', {'class': 'font--product-price'}) for product in products]
-		return names, availabilities, prices
+		data = r.json()['data']
+		names, high_prices, low_prices, availabilities = [], [], [], []
+		for i in data:
+			names.append(i['name'])
+			high_prices.append(i['price']['high_formatted'])
+			low_prices.append(i['price']['low_formatted'])
+			stock = i['badges']
+			if stock['low_stock']:
+				availabilities.append('Low Stock')
+			elif stock['out_of_stock']:
+				availabilities.append('Out of Stock')
+			else:
+				availabilities.append('')
+		if low_prices != high_prices:
+			print("Low and high prices data are not the same!!!")
+		return names, availabilities, high_prices
 
 def get_output(names, availabilities, prices, diet):
 	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
 	for i in range(len(names)):
-		if all([diet in names[i].text, not 'Tee' in names[i].text, 
-		not 'Hoodie' in names[i].text, not 'Onesie' in names[i].text,
-		not 'Hat' in names[i].text]):
+		if all([diet in names[i], not 'Tee' in names[i], 
+		not 'Hoodie' in names[i], not 'Onesie' in names[i],
+		not 'Hat' in names[i]]):
 			if availabilities[i]:
-				output += f"{prices[i].text.strip() : <6} |  {names[i].text.strip() : <48}  |  {availabilities[i].text.strip()} \n"
+				output += f"{prices[i].strip() : <6} |  {names[i].strip() : <48}  |  {availabilities[i].strip()} \n"
 			else:
-				output += f"{prices[i].text.strip() : <6} |  {names[i].text.strip() : <48} \n"
+				output += f"{prices[i].strip() : <6} |  {names[i].strip() : <48} \n"
 
 	return output
 
@@ -67,25 +66,23 @@ def Main():
 		type=str, required=True)
 
 	args = parser.parse_args()
-	try:
-		names, availabilities, prices = get_html(args.location)
-		if args.omni:
-			print("Showing all food and drinks: ")
-			output = get_output(names, availabilities, prices, '')
-		elif args.paleo:
-			print("Showing paleo donuts only: ")
-			output = get_output(names, availabilities, prices, 'Paleo')
-		elif args.vegan:
-			print("Showing vegan donuts only: ")
-			output = get_output(names, availabilities, prices, 'Vegan')
-		
-		print(output)
 
-		if args.file:
-			with open(args.file, "a") as f:
-				f.write(output)
-	except Exception as e:
-		print('\nFailed to get data from URL')
+	names, availabilities, prices = get_html(args.location)
+	if args.omni:
+		print("Showing all food and drinks: ")
+		output = get_output(names, availabilities, prices, '')
+	elif args.paleo:
+		print("Showing paleo donuts only: ")
+		output = get_output(names, availabilities, prices, 'Paleo')
+	elif args.vegan:
+		print("Showing vegan donuts only: ")
+		output = get_output(names, availabilities, prices, 'Vegan')
+	
+	print(output)
+
+	if args.file:
+		with open(args.file, "a") as f:
+			f.write(output)
 
 if __name__ == "__main__":
 	Main()
