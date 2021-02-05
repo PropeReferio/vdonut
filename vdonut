@@ -2,6 +2,7 @@
 import time
 import datetime
 import argparse
+import configparser
 
 from constants import locations
 
@@ -50,6 +51,12 @@ def get_output(names, availabilities, prices, diet):
 	return output
 
 def Main():
+	c_parser = configparser.ConfigParser()
+	c_parser.read('config.ini')
+	location = c_parser['DEFAULTS']['location']
+	diet = c_parser['DEFAULTS']['diet']
+	location_default = location if location else None
+
 	parser = argparse.ArgumentParser()
 	diet_group = parser.add_mutually_exclusive_group(required=True)
 	diet_group.add_argument("-o", "--omni", help="Shows availability of all \
@@ -63,19 +70,21 @@ def Main():
 	parser.add_argument("-l", "--location", help="The store location to get \
 		inventory from. \nValid Choices:\n\nfranklin\neast_nashville\n\
 		west_nashville\nhillsboro\nponce_city_market\nwestside_provisions", 
-		type=str, required=True)
+		type=str, default=location_default, required=True)
 
 	args = parser.parse_args()
 
 	names, availabilities, prices = get_html(args.location)
+	location_string = ' '.join(args.location.split('_')).capitalize()
+
 	if args.omni:
-		print("Showing all food and drinks: ")
+		print(f"\nShowing all food and drinks at the {location_string} location: ")
 		output = get_output(names, availabilities, prices, '')
 	elif args.paleo:
-		print("Showing paleo donuts only: ")
+		print(f"\nShowing paleo donuts only at the {location_string} location: ")
 		output = get_output(names, availabilities, prices, 'Paleo')
 	elif args.vegan:
-		print("Showing vegan donuts only: ")
+		print(f"\nShowing vegan donuts only at the {location_string} location: ")
 		output = get_output(names, availabilities, prices, 'Vegan')
 	
 	print(output)
