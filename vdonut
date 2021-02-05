@@ -8,41 +8,44 @@ from constants import locations
 
 import requests
 
+
 def get_html(location):
-	#TODO: add options for locations, using a dictionary
-	try:
-		r = requests.get(locations[location])
-	except KeyError:
-		print(f"\n\nlocation \"{location}\" is not a valid option. \n\nValid \
+    # TODO: add options for locations, using a dictionary
+    try:
+        r = requests.get(locations[location])
+    except KeyError:
+        print(f"\n\nlocation \"{location}\" is not a valid option. \n\nValid \
 inputs for -l --location: \nfranklin\neast_nashville\nwest_nashville\n\
 hillsboro\nponce_city_market\nwestside_provisions")
-	except Exception as e:
-		print(e)
-	else:
-		#To ensure that the page is loaded
-		data = r.json()['data']
-		names, high_prices, low_prices, availabilities = [], [], [], []
-		for i in data:
-			names.append(i['name'])
-			high_prices.append(i['price']['high_formatted'])
-			low_prices.append(i['price']['low_formatted'])
-			stock = i['badges']
-			if stock['low_stock']:
-				availabilities.append('Low Stock')
-			elif stock['out_of_stock']:
-				availabilities.append('Out of Stock')
-			else:
-				availabilities.append('')
-		if low_prices != high_prices:
-			print("Low and high prices data are not the same!!!")
-		return names, availabilities, high_prices
+    except Exception as e:
+        print(e)
+    else:
+        # To ensure that the page is loaded
+        data = r.json()['data']
+        names, high_prices, low_prices, availabilities = [], [], [], []
+        for i in data:
+            names.append(i['name'])
+            high_prices.append(i['price']['high_formatted'])
+            low_prices.append(i['price']['low_formatted'])
+            stock = i['badges']
+            if stock['low_stock']:
+                availabilities.append('Low Stock')
+            elif stock['out_of_stock']:
+                availabilities.append('Out of Stock')
+            else:
+                availabilities.append('')
+        if low_prices != high_prices:
+            print("Low and high prices data are not the same!!!")
+        return names, availabilities, high_prices
+
 
 def get_output(names, availabilities, prices, diet):
 	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
+	diets = {'omni': '', 'vegan': 'Vegan', 'paleo': 'Paleo'}
 	for i in range(len(names)):
-		if all([diet in names[i], not 'Tee' in names[i], 
-		not 'Hoodie' in names[i], not 'Onesie' in names[i],
-		not 'Hat' in names[i]]):
+		if all([diets[diet] in names[i], not 'Tee' in names[i],
+				not 'Hoodie' in names[i], not 'Onesie' in names[i],
+				not 'Hat' in names[i]]):
 			if availabilities[i]:
 				output += f"{prices[i].strip() : <6} |  {names[i].strip() : <48}  |  {availabilities[i].strip()} \n"
 			else:
@@ -50,48 +53,69 @@ def get_output(names, availabilities, prices, diet):
 
 	return output
 
+def write_config():
+	default_location = ''
+	while default_location not in list(locations.keys()):
+		print('\nChoose your preferred location: \n\nfranklin\nwest_nashville\neast_nashville\nhillsboro\nponce_city_market\nwestside_provisions\n')
+		default_location = input('Location: ')
+	default_diet = ''
+	while default_diet not in ['omni', 'vegan', 'paleo']:
+		print('\nChoose your preferred diet: \n\nomni\nvegan\npaleo\n')
+		default_diet = input('Diet: ')
+
+	new_config = configparser.ConfigParser()
+	new_config['DEFAULTS'] = {
+		'location': default_location,
+		'diet': default_diet
+	}
+
+	with open('config.ini', 'w') as configfile:
+		new_config.write(configfile)
+	print(f"\nDefault location set: {default_location}\nDefault diet set: {default_diet}")
+
 def Main():
 	c_parser = configparser.ConfigParser()
 	c_parser.read('config.ini')
 	location = c_parser['DEFAULTS']['location']
 	diet = c_parser['DEFAULTS']['diet']
 	location_default = location if location else None
+	diet_default = diet if diet else None
 
 	parser = argparse.ArgumentParser()
-	diet_group = parser.add_mutually_exclusive_group(required=True)
-	diet_group.add_argument("-o", "--omni", help="Shows availability of all \
-		food and drinks.", action="store_true")
-	diet_group.add_argument("-p", "--paleo", help="Shows availability of paleo \
-		donuts.", action="store_true")
-	diet_group.add_argument("-v", "--vegan", help="Shows availability of vegan \
-		donuts.", action="store_true")
-	parser.add_argument("-f", "--file", help="Filename to write output to.",
-	type=str)
-	parser.add_argument("-l", "--location", help="The store location to get \
-		inventory from. \nValid Choices:\n\nfranklin\neast_nashville\n\
-		west_nashville\nhillsboro\nponce_city_market\nwestside_provisions", 
-		type=str, default=location_default, required=True)
+	parser.add_argument("-f",
+						"--file",
+						help="Filename to write output to.",
+						type=str)
+	parser.add_argument('-d', '--diet',
+						help="Dietary preferences. Use 'omni' if you have no preference. 'vegan' and 'paleo' are also valid options.",
+						type=str,
+						default=diet_default)
+	parser.add_argument("-l",
+						"--location",
+						help="The store location to get inventory from. Valid Choices: franklin, east_nashville, \
+		west_nashville, hillsboro, ponce_city_market, westside_provisions",
+						type=str,
+						default=location_default)
+
+	subparser = parser.add_subparsers(dest='command')
+	config_subparser = subparser.add_parser('config')
 
 	args = parser.parse_args()
 
-	names, availabilities, prices = get_html(args.location)
-	location_string = ' '.join(args.location.split('_')).capitalize()
+	if args.command == 'config':
+		write_config()
+		return
 
-	if args.omni:
-		print(f"\nShowing all food and drinks at the {location_string} location: ")
-		output = get_output(names, availabilities, prices, '')
-	elif args.paleo:
-		print(f"\nShowing paleo donuts only at the {location_string} location: ")
-		output = get_output(names, availabilities, prices, 'Paleo')
-	elif args.vegan:
-		print(f"\nShowing vegan donuts only at the {location_string} location: ")
-		output = get_output(names, availabilities, prices, 'Vegan')
-	
+	names, availabilities, prices = get_html(args.location)
+	location_string = ' '.join(args.location.split('_')).title()
+	print(f"\nShowing {args.diet} options at the {location_string} location: ")
+	output = get_output(names, availabilities, prices, args.diet)
 	print(output)
 
 	if args.file:
 		with open(args.file, "a") as f:
 			f.write(output)
+
 
 if __name__ == "__main__":
 	Main()
