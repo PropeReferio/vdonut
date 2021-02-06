@@ -1,6 +1,6 @@
 # A little CLI to keep me informed of the availability of vegan donuts near me.
 
-![Screenshot of Application at Work](./gif/normal_use.gif "A look at the application at work")
+![Gif of Application at Work](./gif/normal_use.gif "A look at the application at work")
 
 ### Dependencies:
 requests - run `pip install requests`
@@ -12,6 +12,9 @@ If you add that directory to the `$PATH`, you'll be able to run it from anywhere
 Start by running `vdonut config` to set your default location and diet.
 To override defaults, you could run `vdonut --location franklin --diet paleo`.
 Once you have defaults the way you want them, you can simply run `vdonut`.
+
+## Config Demo:
+![Gif of Config at Work](./gif/config.gif "A look at the config at work")
 
 ```
 vdonut --help
