@@ -1,5 +1,7 @@
 # A little CLI to keep me informed of the availability of vegan donuts near me.
 
+![Screenshot of Application at Work](./gif/normal_use.gif "A look at the application at work")
+
 ### Dependencies:
 requests - run `pip install requests`
 
