@@ -6,3 +6,5 @@ locations = {
 	'ponce_city_market': 'https://atl-five-daughters-bakery.square.site/app/store/api/v13/editor/users/131552810/sites/220032380801792062/store-locations/11ea75c467baa8e7bc9f54ab3a70da4d/products?page=1&per_page=200&include=images,categories&has_categories=1&fulfillments[]=pickup',
 	'westside_provisions': 'https://atl-five-daughters-bakery.square.site/app/store/api/v13/editor/users/131552810/sites/220032380801792062/store-locations/11ea75c4686f832cbc9f54ab3a70da4d/products?page=1&per_page=200&include=images,categories&has_categories=1&fulfillments[]=pickup',
 }
+
+diets = {'omni': '', 'vegan': 'Vegan', 'paleo': 'Paleo'}

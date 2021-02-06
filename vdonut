@@ -3,14 +3,19 @@ import time
 import datetime
 import argparse
 import configparser
+import os
 
-from constants import locations
+from constants import locations, diets
 
 import requests
 
 
 def get_html(location):
-    # TODO: add options for locations, using a dictionary
+    """
+    Makes a request that gets a JSON as a response.
+    :param location: (str) url for the store location passed to args.location.
+    :return: ([] str) Returns lists of product names, prices, and availabilities.
+    """
     try:
         r = requests.get(locations[location])
     except KeyError:
@@ -39,9 +44,18 @@ hillsboro\nponce_city_market\nwestside_provisions")
         return names, availabilities, high_prices
 
 
-def get_output(names, availabilities, prices, diet):
-	output = str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
-	diets = {'omni': '', 'vegan': 'Vegan', 'paleo': 'Paleo'}
+def get_output(names, availabilities, prices, diet, location_string):
+	"""
+	Generates the formatted text that the user sees.
+	:param names: ([] str) List of product names from the json.
+	:param availabilities: ([] str) List of availabilities (Low Stock, Out of Stock) from the json.
+	:param prices: ([] str) List of prices from the json.
+	:param diet: (str) The diet passed to args.diet.
+	:param location_string: (str) The location passed to args.diet, in title-case.
+	:return: The formatted text.
+	"""
+	output = f"\nShowing {diet} options at the {location_string} location: \n"
+	output += str(datetime.datetime.now().strftime("%d %B %Y, %H:%M")) + '\n\n'
 	for i in range(len(names)):
 		if all([diets[diet] in names[i], not 'Tee' in names[i],
 				not 'Hoodie' in names[i], not 'Onesie' in names[i],
@@ -54,12 +68,16 @@ def get_output(names, availabilities, prices, diet):
 	return output
 
 def write_config():
+	"""
+	When 'vdonut config' is called, this function writes the config.ini file.
+	:return: None
+	"""
 	default_location = ''
 	while default_location not in list(locations.keys()):
 		print('\nChoose your preferred location: \n\nfranklin\nwest_nashville\neast_nashville\nhillsboro\nponce_city_market\nwestside_provisions\n')
 		default_location = input('Location: ')
 	default_diet = ''
-	while default_diet not in ['omni', 'vegan', 'paleo']:
+	while default_diet not in list(diets.keys()):
 		print('\nChoose your preferred diet: \n\nomni\nvegan\npaleo\n')
 		default_diet = input('Diet: ')
 
@@ -74,12 +92,22 @@ def write_config():
 	print(f"\nDefault location set: {default_location}\nDefault diet set: {default_diet}")
 
 def Main():
+	"""
+	Takes arguments with argparse and generates formatted text detailing the availabilities
+	and prices of donuts at any of 6 Five Daughters Bakery locations.
+	:return:
+	"""
+	script_path = os.path.dirname(os.path.abspath(__file__))
+	config_path = os.path.join(script_path, 'config.ini')
 	c_parser = configparser.ConfigParser()
-	c_parser.read('config.ini')
-	location = c_parser['DEFAULTS']['location']
-	diet = c_parser['DEFAULTS']['diet']
-	location_default = location if location else None
-	diet_default = diet if diet else None
+	if os.path.isfile(config_path):
+		c_parser.read(config_path)
+		location = c_parser['DEFAULTS']['location']
+		diet = c_parser['DEFAULTS']['diet']
+		location_default = location if location else None
+		diet_default = diet if diet else None
+	else:
+		location_default, diet_default = None, None
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-f",
@@ -102,14 +130,22 @@ def Main():
 
 	args = parser.parse_args()
 
+	if args.diet not in diets.keys():
+		raise Exception(f"'{args.diet}' is not a valid option for diet. Run 'vdonut --help' to see valid options. You can set default values for location and diet by running \
+		'vdonut config'.")
+	if args.location not in locations.keys():
+		raise Exception(f"'{args.location}' is not a valid option for location. Run 'vdonut --help' to see valid options. You can set default values for location and diet by running \
+		'vdonut config'.")
+
 	if args.command == 'config':
 		write_config()
 		return
 
 	names, availabilities, prices = get_html(args.location)
+
 	location_string = ' '.join(args.location.split('_')).title()
-	print(f"\nShowing {args.diet} options at the {location_string} location: ")
-	output = get_output(names, availabilities, prices, args.diet)
+
+	output = get_output(names, availabilities, prices, args.diet, location_string)
 	print(output)
 
 	if args.file:
