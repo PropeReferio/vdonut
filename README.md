@@ -1,26 +1,33 @@
 # A little CLI to keep me informed of the availability of vegan donuts near me.
 
 ### Dependencies:
-Selenium
-Chrome
-You'll need to download the `chromedriver` executable, with a version that matches
-the version of your Chrome browser, and put that executable in a directory that's on `$PATH`.
-To see $PATH, type `echo $PATH` in a terminal.
+requests - run `pip install requests`
 
 ## Usage:
-usage: vdonut [-h] (-o | -p | -v) [-f FILE] -l LOCATION
+You can run this script from the directory that contains it by running `vdonut`.
+If you add that directory to the `$PATH`, you'll be able to run it from anywhere.
+
+Start by running `vdonut config` to set your default location and diet.
+To override defaults, you could run `vdonut --location franklin --diet paleo`.
+Once you have defaults the way you want them, you can simply run `vdonut`.
+
+```
+vdonut --help
+usage: vdonut [-h] [-f FILE] [-d DIET] [-l LOCATION] {config} ...
 
 optional arguments:
   -h, --help            show this help message and exit
-  -o, --omni            Shows availability of all donuts.
-  -p, --paleo           Shows availability of paleo donuts.
-  -v, --vegan           Shows availability of vegan donuts.
   -f FILE, --file FILE  Filename to write output to.
+  -d DIET, --diet DIET  Dietary preferences. Use 'omni' if you have no
+                        preference. 'vegan' and 'paleo' are also valid
+                        options.
   -l LOCATION, --location LOCATION
                         The store location to get inventory from. Valid
-                        Choices: franklin east_nashville west_nashville
-                        hillsboro ponce_city_market westside_provisions
+                        Choices: franklin, east_nashville, west_nashville,
+                        hillsboro, ponce_city_market, westside_provisions
 
-## Coming Soon:
-Configure your default options, such as diet and location
-Lose dependency on selenium and Chrome.
+config:
+  Running 'vdonut config' will set default arguments for location and diet.
+
+  {config}
+```
