@@ -125,7 +125,11 @@ def Main():
 						type=str,
 						default=location_default)
 
-	subparser = parser.add_subparsers(dest='command')
+	subparser = parser.add_subparsers(
+		dest='command',
+		title='config',
+		description="Running 'vdonut config' will set default arguments for location and diet."
+	)
 	config_subparser = subparser.add_parser('config')
 
 	args = parser.parse_args()
