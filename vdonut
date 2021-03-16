@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-import time
-import datetime
 import argparse
 import configparser
+import datetime
 import os
-
-from constants import locations, diets
+import smtplib
+import ssl
 
 import requests
+
+from constants import locations, diets
 
 
 def get_html(location):
@@ -93,6 +94,24 @@ def write_config():
         new_config.write(configfile)
     print(f"\nDefault location set: {default_location}\nDefault diet set: {default_diet}")
 
+def send_email(subject, body, receiver):
+    sender_email = os.getenv('VDONUT_EMAIL_SENDER')
+    message = f"""\
+    Subject: {subject}
+
+    {body}"""
+
+    port = 465
+    # For SSL
+    password = os.getenv('VDONUT_EMAIL_SENDER_PASSWORD')
+
+    # Create a secure SSL context
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver, message)
+
 
 def Main():
     """
@@ -128,6 +147,10 @@ def Main():
 		west_nashville, hillsboro, ponce_city_market, westside_provisions",
                         type=str,
                         default=location_default)
+    parser.add_argument("-e",
+                        "--email",
+                        help="Email address to send results to.",
+                        type=str)
 
     subparser = parser.add_subparsers(
         dest='command',
@@ -159,6 +182,9 @@ def Main():
     if args.file:
         with open(args.file, "a") as f:
             f.write(output)
+
+    if args.email:
+        send_email(f"{diets[args.diet]} donuts at the Five Daughters Bakery in {args.location}", output, args.email)
 
 
 if __name__ == "__main__":
